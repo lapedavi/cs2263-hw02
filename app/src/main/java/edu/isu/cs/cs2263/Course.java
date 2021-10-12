@@ -7,6 +7,11 @@ public class Course {
     private String title;
 
     public Course(){}
+    public Course(int num, String sub, String title){
+        setNumber(num);
+        setSubject(sub);
+        setTitle(title);
+    }
 
     public void setNumber(int num){
         number = num;
@@ -33,6 +38,6 @@ public class Course {
     }
 
     public String toString(){
-        return getNumber() + ", " + getTitle() + ", " + getSubject();
+        return getSubject() + " " + getNumber() + " " + getTitle();
     }
 }

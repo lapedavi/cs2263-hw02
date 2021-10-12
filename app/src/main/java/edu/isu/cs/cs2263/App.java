@@ -4,29 +4,124 @@
 package edu.isu.cs.cs2263;
 
 import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App extends Application {
+
     public String getGreeting() {
         return "Hello World!";
     }
 
+    public GridPane buildGrid(Stage stage){
+        IOManager io = new IOManager();
+
+        stage.setTitle("Course View");
+
+        Label studentLabel = new Label("Students");
+        studentLabel.setFont(new Font(20));
+
+        Label courseLabel = new Label("Courses");
+        courseLabel.setFont(new Font(20));
+
+        Text isTaking = new Text("is taking");
+        isTaking.setFont(new Font(18));
+
+        ListView studentList = new ListView();
+        studentList.setMaxHeight(150);
+        studentList.setMaxWidth(150);
+
+
+        ListView courseList = new ListView();
+        courseList.setMaxHeight(150);
+
+        Button loadButton = new Button("Load Data");
+        loadButton.setFont(new Font(20));
+        EventHandler<MouseEvent> loadClicked = new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                studentList.setItems(FXCollections.observableList(io.readData("jsonData.txt")));
+
+                EventHandler<MouseEvent> studentClicked = new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                    courseList.setItems(FXCollections.observableList(io.readData("jsonData.txt").get(studentList.getSelectionModel().getSelectedIndex()).getCourseList()));
+                    }
+                };
+                studentList.addEventFilter(MouseEvent.MOUSE_CLICKED,studentClicked);
+            }
+        };
+        loadButton.addEventFilter(MouseEvent.MOUSE_CLICKED,loadClicked);
+
+        GridPane gp = new GridPane();
+        gp.setHalignment(loadButton, HPos.RIGHT);
+        gp.setAlignment(Pos.CENTER);
+        gp.setMinSize(400,200);
+        gp.setVgap(5);
+        gp.setHgap(5);
+        gp.setPadding(new Insets(10,10,10,10));
+        gp.add(studentLabel,0,0);
+        gp.add(courseLabel, 2,0);
+        gp.add(studentList,0,1);
+        gp.add(courseList,2,1,2,1);
+        gp.add(isTaking,1,1);
+        gp.add(loadButton,3,2);
+
+        return gp;
+    }
+
     @Override
     public void start(Stage stage) throws Exception{
-        stage.setTitle("Course View");
-        Label label = new Label("Students");
-        Label courseLabel = new Label("Courses");
+        Scene sc = new Scene(buildGrid(stage));
+        stage.setScene(sc);
         stage.show();
     }
 
     public static void main(String[] args) {
+        List<Student> stList = new ArrayList<Student>();
+        IOManager io = new IOManager();
+
+        Course CS1181 = new Course(1181,"CS","Intro to Programming");
+        Course CS2263 = new Course(2263,"CS","Advanced OO Programming");
+        Course CS4423 = new Course(4423,"CS","Software Evolution");
+
+        List<Course> igCourseList = new ArrayList<>();
+        igCourseList.add(CS1181);
+        igCourseList.add(CS2263);
+        igCourseList.add(CS4423);
+
+        List<Course> bsCourseList = new ArrayList<>();
+        bsCourseList.add(CS2263);
+        bsCourseList.add(CS4423);
+
+        List<Course> sjCourseList = new ArrayList<>();
+        sjCourseList.add(CS4423);
+
+        Student ig = new Student("Isaac","Grffith",igCourseList);
+        Student bs = new Student("Bob","Sampson",bsCourseList);
+        Student sj = new Student("Sarah","James",sjCourseList);
+
+        stList.add(bs);
+        stList.add(ig);
+        stList.add(sj);
+
+        io.writeData("jsonData.txt",stList);
+
         Application.launch(args);
     }
 }
